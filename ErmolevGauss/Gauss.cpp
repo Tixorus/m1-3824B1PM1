@@ -163,10 +163,29 @@ public:
     }
 };
 
+template <typename T> void checkGauss(Vector<T>& b, Matrix<T>& A, Vector<T>& ans)
+{
+    size_t m = A.length();
+    size_t n = A[0].length();
+    for (int i = 0; i < m; i++)
+    {
+        T val = 0;
+        for (int j = 0; j < n; j++)
+        {
+            val += A[i][j] * ans[j];
+        }
+        std::cout << "\n" << val << " | " << b[i];
+    }
+    std::cout << "\n";
+}
+
 template <typename T> void Gauss(Vector<T>& b, Matrix<T>& A)
 {
     size_t m = A.length();
     size_t n = A[0].length();
+
+    Vector<T>& ogb(b);
+    Matrix<T>& ogA(A);
 
     if (b.length() != m)
     {
@@ -210,18 +229,21 @@ template <typename T> void Gauss(Vector<T>& b, Matrix<T>& A)
 
     bool complete = true;
     int dim = 0;
+    Vector<T> ans(n);
     for (int i = 0; i < m; i++)
     {
         bool allZero = true;
         for (int j = 0; j < n; j++)
         {
             if (A[i][j] != T(0) && !allZero) { complete = false; }
+            if (A[i][j] != T(0) && allZero) { ans[j] = b[i]; }
             if (A[i][j] != T(0)) { allZero = false; }
         }
         if (allZero && b[i] != T(0)) { throw std::runtime_error("system has no solution"); }
         if (!allZero) dim++;
     }
     if (n == m) std::cout << "\n\n\nDimension is: " << dim;
+    checkGauss(ogb, ogA, ans);
     printMat(A, b);
 }
 
@@ -280,7 +302,13 @@ int main()
         }
     }
     printMat(A, b);
-    Gauss(b, A);
-    std::cin >> choice;
-    return 1;
+    try
+    {
+        Gauss(b, A);
+    }
+    catch (std::exception& e)
+    {
+        std::cout << e.what();
+    }
+    return 0;
 }
